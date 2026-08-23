@@ -21,9 +21,38 @@ const clientDist = resolve(__dirname, '../../client/dist');
 
 const app = express();
 
+const toOrigin = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    return new URL(trimmed).origin;
+  } catch {
+    if (/^localhost(:\d+)?$/i.test(trimmed) || /^127\.0\.0\.1(:\d+)?$/.test(trimmed)) {
+      return `http://${trimmed}`;
+    }
+
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+      try {
+        return new URL(`https://${trimmed}`).origin;
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
+  }
+};
+
 const configuredOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
   .split(',')
-  .map((origin) => origin.trim())
+  .map((origin) => toOrigin(origin))
   .filter(Boolean);
 
 const vercelOrigins = [
@@ -32,12 +61,22 @@ const vercelOrigins = [
   process.env.VERCEL_PROJECT_PRODUCTION_URL
 ]
   .filter(Boolean)
-  .map((origin) => `https://${origin}`);
+  .map((origin) => toOrigin(origin));
+
+const platformOrigins = [
+  process.env.RENDER_EXTERNAL_URL,
+  process.env.CLIENT_URL,
+  process.env.CORS_ORIGIN,
+  process.env.VITE_API_URL
+]
+  .map((origin) => toOrigin(origin))
+  .filter(Boolean);
 
 const allowedOrigins = [
   ...new Set([
     ...configuredOrigins,
     ...vercelOrigins,
+    ...platformOrigins,
     'http://localhost:3000',
     'http://localhost:3002',
     'http://localhost:5173',

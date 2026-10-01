@@ -19,7 +19,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.4",
-    "morgan": "^1.10.0",
+    "morgan": "^1.12.1",
     "multer": "^2.2.0",
     "pdf-parse": "^2.4.5",
     "rss-parser": "^3.13.0",
